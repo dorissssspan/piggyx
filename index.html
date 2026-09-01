@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Piggy X · 潘泯株的个人小站</title>
+<meta name="description" content="潘泯株的个人网站：学习心得分享 + 个人简历">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="logo" href="index.html">Piggy<span class="accent">X</span><span class="cursor"></span></a>
+    <div class="nav-links">
+      <a href="index.html" class="active">首页</a>
+      <a href="share.html">日常唠叨</a>
+      <a href="notes.html">学习日志</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container hero-grid">
+    <div>
+      <div class="hero-kicker">whoami</div>
+      <h1>哈喽，我是<span class="glow">Doris</span><br><span class="glow">记录日常|写干货|AI提效</span></h1>
+      <p class="sub">一个集才华和美貌于一身的女子</p>
+      <div class="btn-row">
+        <a class="btn btn-primary" href="share.html">进入我的小世界 →</a>
+        <a class="btn btn-ghost" href="resume.html">查看简历</a>
+      </div>
+    </div>
+    <div class="terminal">
+      <div class="term-bar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="term-title">piggy@transform: ~</span>
+      </div>
+      <div class="term-body">
+        <div><span class="prompt">$</span> <span class="cmd">cat about_me.txt</span></div>
+        <div class="out">[爱好] 遛猫狗、烹饪、户外运动、自驾游、健身、咖啡拉花...  </div>
+        <div class="out">[A I]  漫剧、Skills、自动化办公、AI agent</div>
+        <div class="out">[兼职] 摄影师，销售员，咖啡师，安防工程</div>
+        <div><span class="prompt">$</span> <span class="cmd">ls ./skills/</span></div>
+        <div class="out"><span class="hl">Linux/</span>  <span class="hl">Python/</span>  <span class="hl">MySQL/</span>  <span class="hl">AI_Agents/</span></div>
+        <div><span class="prompt">$</span> <span class="cmd">./run dream.sh</span></div>
+        <div class="out"><span class="ok">[OK]</span> IT支持 / 运维 / 实施工程师 / AI应用 ... running</div>
+        <div><span class="prompt">$</span> <span class="cmd">_</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container stats">
+    <div class="stat"><div class="num">3年+</div><div class="label">管理社群一线经验</div></div>
+    <div class="stat"><div class="num">8项</div><div class="label">技能证书</div></div>
+    <div class="stat"><div class="num">80%</div><div class="label">自研公式提升的核算效率</div></div>
+    <div class="stat"><div class="num">∞</div><div class="label">持续学习的热情</div></div>
+  </div>
+</header>
+
+<main>
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <h2><span class="hash">#</span>最新文章</h2>
+        <a class="more" href="notes.html">查看全部 →</a>
+      </div>
+      <div class="cards" id="latest-cards"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">© 2026 Piggy X · built with <span class="heart">♥</span> by 潘泯株</div>
+</footer>
+
+<script src="js/articles.js"></script>
+<script>
+  const wrap = document.getElementById('latest-cards');
+  ARTICLES.slice(0, 3).forEach(a => {
+    const card = document.createElement('a');
+    card.className = 'card';
+    card.href = 'article.html?id=' + a.id;
+    card.innerHTML =
+      '<div class="card-meta"><span class="tag ' + a.tagClass + '">' + a.tag + '</span>' +
+      '<span class="date">' + a.date + '</span></div>' +
+      '<h3>' + a.title + '</h3>' +
+      '<p class="summary">' + a.summary + '</p>' +
+      '<span class="read-more">read more →</span>';
+    wrap.appendChild(card);
+  });
+</script>
+</body>
+</html>

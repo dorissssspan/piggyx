@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>日常唠叨 · Piggy X</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="logo" href="index.html">Piggy<span class="accent">X</span><span class="cursor"></span></a>
+    <div class="nav-links">
+      <a href="index.html">首页</a>
+      <a href="share.html" class="active">日常唠叨</a>
+      <a href="notes.html" >学习日志</a>
+      <a href="resume.html">我的简历</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <section class="section" style="padding-top:56px;">
+    <div class="container">
+      <div class="section-head">
+        <h2><span class="hash">#</span>分享日常</h2>
+        <a class="more" href="index.html">← 返回首页</a>
+      </div>
+      <p style="color:var(--muted);margin-bottom:26px;max-width:640px;">
+        Piggy的小世界❤
+      </p>
+      <div class="filter-bar" id="filter-bar"></div>
+      <div class="cards" id="note-cards"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container">© 2026 Piggy X · built with <span class="heart">♥</span> by 潘泯株</div>
+</footer>
+
+<script src="js/share.js"></script>
+<script>
+  const tags = ['全部'];
+  ARTICLES.forEach(a => { if (!tags.includes(a.tag)) tags.push(a.tag); });
+
+  const bar = document.getElementById('filter-bar');
+  const wrap = document.getElementById('note-cards');
+  let current = '全部';
+
+  function render() {
+    bar.innerHTML = '';
+    tags.forEach(t => {
+      const b = document.createElement('button');
+      b.className = 'filter-btn' + (t === current ? ' active' : '');
+      b.textContent = t === '全部' ? '全部 (' + ARTICLES.length + ')' : t;
+      b.onclick = () => { current = t; render(); };
+      bar.appendChild(b);
+    });
+
+    wrap.innerHTML = '';
+    ARTICLES.filter(a => current === '全部' || a.tag === current).forEach(a => {
+      const card = document.createElement('a');
+      card.className = 'card';
+      card.href = 'article.html?id=' + a.id;
+      card.innerHTML =
+        '<div class="card-meta"><span class="tag ' + a.tagClass + '">' + a.tag + '</span>' +
+        '<span class="date">' + a.date + '</span></div>' +
+        '<h3>' + a.title + '</h3>' +
+        '<p class="summary">' + a.summary + '</p>' +
+        '<span class="read-more">read more →</span>';
+      wrap.appendChild(card);
+    });
+  }
+  render();
+</script>
+</body>
+</html>

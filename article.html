@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>文章 · Piggy X</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="logo" href="index.html">Piggy<span class="accent">X</span><span class="cursor"></span></a>
+    <div class="nav-links">
+      <a href="index.html">首页</a>
+      <a href="share.html" >日常唠叨</a>
+      <a href="notes.html" class="active">学习日志</a>
+      <a href="resume.html">我的简历</a>
+    </div>
+  </div>
+</nav>
+
+<main class="article-wrap">
+  <div id="article">
+    <div class="article-head">
+      <div class="meta"><span class="tag" id="a-tag"></span><span id="a-date"></span><span>阅读约 4 分钟</span></div>
+      <h1 id="a-title"></h1>
+    </div>
+    <div class="article-body" id="a-body"></div>
+    <div class="article-nav" id="a-nav"></div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container">© 2026 Piggy X · built with <span class="heart">♥</span> by 潘泯株</div>
+</footer>
+
+<script src="js/articles.js"></script>
+<script>
+  const params = new URLSearchParams(location.search);
+  const id = params.get('id');
+  const idx = ARTICLES.findIndex(a => a.id === id);
+  const a = ARTICLES[idx];
+
+  document.title = (a ? a.title : '未找到文章') + ' · Piggy X';
+
+  if (!a) {
+    document.getElementById('article').innerHTML =
+      '<h1 style="font-size:28px;">404 · 这篇文章去旅行了</h1>' +
+      '<p style="color:var(--muted);margin:16px 0 24px;">没有找到对应的文章，可能链接写错了。</p>' +
+      '<a class="btn btn-primary" href="notes.html">← 返回心得列表</a>';
+  } else {
+    document.getElementById('a-tag').textContent = a.tag;
+    document.getElementById('a-tag').className = 'tag ' + a.tagClass;
+    document.getElementById('a-date').textContent = '发布于 ' + a.date;
+    document.getElementById('a-title').textContent = a.title;
+    document.getElementById('a-body').innerHTML = a.content;
+
+    const nav = document.getElementById('a-nav');
+    const prev = ARTICLES[idx - 1];
+    const next = ARTICLES[idx + 1];
+    if (prev) {
+      const l = document.createElement('a');
+      l.href = 'article.html?id=' + prev.id;
+      l.textContent = '← 上一篇：' + prev.title;
+      nav.appendChild(l);
+    }
+    if (next) {
+      const r = document.createElement('a');
+      r.href = 'article.html?id=' + next.id;
+      r.textContent = '下一篇：' + next.title + ' →';
+      nav.appendChild(r);
+    }
+  }
+</script>
+</body>
+</html>

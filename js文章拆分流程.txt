@@ -1,0 +1,23 @@
+piggyx/js/
+├── data/
+│   ├── linux.js      → const LINUX_ARTICLES = [ ... ]
+│   ├── python.js     → const PYTHON_ARTICLES = [ ... ]
+│   ├── mysql.js      → const MYSQL_ARTICLES = [ ... ]
+│   ├── ai.js         → const AI_ARTICLES = [ ... ]
+│   └── misc.js       → 其他/多标签的
+└── articles.js       → 只做合并，不含正文
+合并文件 articles.js 只写一行：
+const ARTICLES = [
+  ...LINUX_ARTICLES,
+  ...PYTHON_ARTICLES,
+  ...MYSQL_ARTICLES,
+  ...AI_ARTICLES,
+  ...MISC_ARTICLES
+];
+HTML 里加载顺序必须是「先 data 文件、后 articles.js」：
+<script src="js/data/linux.js"></script>
+<script src="js/data/python.js"></script>
+<script src="js/data/mysql.js"></script>
+<script src="js/data/ai.js"></script>
+<script src="js/data/misc.js"></script>
+<script src="js/articles.js"></script>  <!-- 最后，合并 -->

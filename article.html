@@ -23,7 +23,7 @@
 <main class="article-wrap">
   <div id="article">
     <div class="article-head">
-      <div class="meta"><span class="tag" id="a-tag"></span><span id="a-date"></span><span>阅读约 4 分钟</span></div>
+      <div class="meta"><span class="tag" id="a-tag"></span><span id="a-date"></span></div>
       <h1 id="a-title"></h1>
     </div>
     <div class="article-body" id="a-body"></div>
@@ -35,6 +35,12 @@
   <div class="container">© 2026 Piggy X · built with <span class="heart">♥</span> by 潘泯株</div>
 </footer>
 
+<script src="js/data-articles/Web.js"></script>
+<script src="js/data-articles/Linux.js"></script>
+<script src="js/data-articles/Python.js"></script>
+<script src="js/data-articles/AI.js"></script>
+<script src="js/data-articles/MySQL.js"></script>
+<script src="js/data-articles/Tool.js"></script>
 <script src="js/articles.js"></script>
 <script>
   const params = new URLSearchParams(location.search);
@@ -48,7 +54,7 @@
     document.getElementById('article').innerHTML =
       '<h1 style="font-size:28px;">404 · 这篇文章去旅行了</h1>' +
       '<p style="color:var(--muted);margin:16px 0 24px;">没有找到对应的文章，可能链接写错了。</p>' +
-      '<a class="btn btn-primary" href="notes.html">← 返回心得列表</a>';
+      '<a class="btn btn-primary" href="notes.html">← 返回学习日志</a>';
   } else {
     document.getElementById('a-tag').textContent = a.tag;
     document.getElementById('a-tag').className = 'tag ' + a.tagClass;

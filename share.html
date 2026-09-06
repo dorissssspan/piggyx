@@ -40,10 +40,16 @@
   <div class="container">© 2026 Piggy X · built with <span class="heart">♥</span> by 潘泯株</div>
 </footer>
 
+<script src="js/data-share/Diary.js"></script>
+<script src="js/data-share/Photo.js"></script>
+<script src="js/data-share/Stock.js"></script>
+<script src="js/data-share/ReadingNotes.js"></script>
+<script src="js/data-share/Travel.js"></script>
+<script src="js/data-share/Philosophy.js"></script>
 <script src="js/share.js"></script>
 <script>
   const tags = ['全部'];
-  ARTICLES.forEach(a => { if (!tags.includes(a.tag)) tags.push(a.tag); });
+  SHARE_ARTICLES.forEach(a => { if (!tags.includes(a.tag)) tags.push(a.tag); });
 
   const bar = document.getElementById('filter-bar');
   const wrap = document.getElementById('note-cards');
@@ -54,16 +60,16 @@
     tags.forEach(t => {
       const b = document.createElement('button');
       b.className = 'filter-btn' + (t === current ? ' active' : '');
-      b.textContent = t === '全部' ? '全部 (' + ARTICLES.length + ')' : t;
+      b.textContent = t === '全部' ? '全部 (' + SHARE_ARTICLES.length + ')' : t;
       b.onclick = () => { current = t; render(); };
       bar.appendChild(b);
     });
 
     wrap.innerHTML = '';
-    ARTICLES.filter(a => current === '全部' || a.tag === current).forEach(a => {
+    SHARE_ARTICLES.filter(a => current === '全部' || a.tag === current).forEach(a => {
       const card = document.createElement('a');
       card.className = 'card';
-      card.href = 'article.html?id=' + a.id;
+      card.href = 'share-art.html?id=' + a.id;
       card.innerHTML =
         '<div class="card-meta"><span class="tag ' + a.tagClass + '">' + a.tag + '</span>' +
         '<span class="date">' + a.date + '</span></div>' +

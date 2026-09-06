@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章 · Piggy X</title>
+    <link rel="stylesheet" href="css/style.css">
+    </head>
+    <body>
+
+    <nav class="nav">
+      <div class="nav-inner">
+        <a class="logo" href="index.html">Piggy<span class="accent">X</span><span class="cursor"></span></a>
+        <div class="nav-links">
+          <a href="index.html">首页</a>
+          <a href="share.html" class="active">日常唠叨</a>
+          <a href="notes.html">学习日志</a>
+          <a href="resume.html">我的简历</a>
+        </div>
+      </div>
+    </nav>
+
+<main class="article-wrap">
+  <div id="article">
+    <div class="article-head">
+      <div class="meta"><span class="tag" id="a-tag"></span><span id="a-date"></span></div>
+      <h1 id="a-title"></h1>
+    </div>
+    <div class="article-body" id="a-body"></div>
+    <div class="article-nav" id="a-nav"></div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container">© 2026 Piggy X · built with <span class="heart">♥</span> by 潘泯株</div>
+</footer>
+
+<script src="js/data-share/Diary.js"></script>
+<script src="js/data-share/Philosophy.js"></script>
+<script src="js/data-share/Photo.js"></script>
+<script src="js/data-share/ReadingNotes.js"></script>
+<script src="js/data-share/Stock.js"></script>
+<script src="js/data-share/Travel.js"></script>
+<script src="js/share.js"></script>
+<script>
+  const params = new URLSearchParams(location.search);
+  const id = params.get('id');
+  const idx = SHARE_ARTICLES.findIndex(a => a.id === id);
+  const a = SHARE_ARTICLES[idx];
+
+  document.title = (a ? a.title : '未找到文章') + ' · Piggy X';
+
+  if (!a) {
+    document.getElementById('article').innerHTML =
+      '<h1 style="font-size:28px;">404 · 这篇文章去旅行了</h1>' +
+      '<p style="color:var(--muted);margin:16px 0 24px;">没有找到对应的文章，可能链接写错了。</p>' +
+      '<a class="btn btn-primary" href="share.html">← 返回日常唠叨</a>';
+  } else {
+    document.getElementById('a-tag').textContent = a.tag;
+    document.getElementById('a-tag').className = 'tag ' + a.tagClass;
+    document.getElementById('a-date').textContent = '发布于 ' + a.date;
+    document.getElementById('a-title').textContent = a.title;
+    document.getElementById('a-body').innerHTML = a.content;
+
+    const nav = document.getElementById('a-nav');
+    const prev = SHARE_ARTICLES[idx - 1];
+    const next = SHARE_ARTICLES[idx + 1];
+    if (prev) {
+      const l = document.createElement('a');
+      l.href = 'share-art.html?id=' + prev.id;
+      l.textContent = '← 上一篇：' + prev.title;
+      nav.appendChild(l);
+    }
+    if (next) {
+      const r = document.createElement('a');
+      r.href = 'share-art.html?id=' + next.id;
+      r.textContent = '下一篇：' + next.title + ' →';
+      nav.appendChild(r);
+    }
+
+    // ===== 章节目录：自动收集 h2/h3 生成锚点跳转（标题 >= 6 才启用） =====
+    const body = document.getElementById('a-body');
+    const heads = [...body.querySelectorAll('h2, h3')];
+    if (heads.length >= 6) {
+      heads.forEach((h, i) => { h.id = 'sec-' + i; });
+
+      const btn = document.createElement('button');
+      btn.className = 'toc-btn';
+      btn.textContent = '☰ 目录';
+
+      const panel = document.createElement('div');
+      panel.className = 'toc-panel';
+      panel.innerHTML = '<h4>章节目录 · ' + heads.length + ' 节</h4>';
+      heads.forEach(h => {
+        const el = document.createElement(h.tagName === 'H2' ? 'div' : 'a');
+        el.className = h.tagName === 'H2' ? 'toc-vol' : 'toc-chap';
+        el.textContent = h.textContent;
+        el.onclick = () => {
+          document.getElementById(h.id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+          panel.classList.remove('open');
+        };
+        panel.appendChild(el);
+      });
+
+      btn.onclick = () => panel.classList.toggle('open');
+      // 点击面板外的地方自动收起
+      document.addEventListener('click', e => {
+        if (!panel.contains(e.target) && e.target !== btn) panel.classList.remove('open');
+      });
+
+      document.body.appendChild(panel);
+      document.body.appendChild(btn);
+    }
+  }
+</script>
+</body>
+</html>

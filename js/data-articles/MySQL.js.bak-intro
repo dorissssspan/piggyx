@@ -1,0 +1,146 @@
+/* Piggy X · MySQL 学习心得 */
+const MYSQL_ARTICLES = [
+  {
+    id: "mysql-intro",
+    title: "MySQL 入门：从一条 SELECT 到全库备份",
+    date: "2026-09-03",
+    tag: "MySQL",
+    tagClass: "t-mysql",
+    summary: "从 sudo mysql 起步，把建库、CRUD、聚合、HAVING、JOIN、权限最小化、mysqldump 备份、utf8mb4 乱码处理一次性串成一条线。每段末尾都标了面试会怎么问。",
+    content: `
+<p>两周时间，把 MySQL 从"听过"推到"面试能讲、操作能上手"。这一篇不堆概念，按"动手 → 踩坑 → 面试延伸"的顺序串。</p>
+
+<h3>一、登录 & 四个系统库</h3>
+<p>Ubuntu 的 MySQL，root 默认走 <code>auth_socket</code> 认证——系统用户是 root 就免密。</p>
+<pre>sudo mysql                    # 直接进，不用密码（Ubuntu 专属坑）
+SELECT VERSION();
+SHOW DATABASES;
+SELECT USER(), CURRENT_USER();   # 声称是谁 vs 实际是谁</pre>
+<p>四系统库含义：</p>
+<table>
+  <tr><th>库</th><th>作用</th></tr>
+  <tr><td>information_schema</td><td>元数据字典（所有库/表/字段的"档案室"）</td></tr>
+  <tr><td>mysql</td><td>用户、权限表都在这</td></tr>
+  <tr><td>performance_schema</td><td>性能监控数据</td></tr>
+  <tr><td>sys</td><td>给 DBA 看的便捷视图</td></tr>
+</table>
+<blockquote>面试常问："<code>USER()</code> 和 <code>CURRENT_USER()</code> 区别？"——前者是客户端声称的身份，后者是 MySQL 认证后的身份，两者不同说明你用授权账号连过来的。</blockquote>
+
+<h3>二、建第一个库和表</h3>
+<pre>CREATE DATABASE school;
+USE school;                    # 面试常考！不切库就建错地方
+CREATE TABLE student (
+  id INT PRIMARY KEY AUTO_INCREMENT,  # 主键 + 自增：1,2,3…
+  name VARCHAR(20) NOT NULL,
+  age INT,
+  score DECIMAL(5,2)                 # 钱用 DECIMAL，不用 FLOAT（会丢精度）
+);</pre>
+<ul>
+  <li><b>AUTO_INCREMENT 永不复用</b>：删了 id=3，新数据从 4 开始，不会回去补空位。业务上很重要（订单号/流水号不能重复利用）。</li>
+  <li><b>VARCHAR vs CHAR</b>：VARCHAR 变长省空间，CHAR 定长。面试第一题。</li>
+  <li><b>建表常用三件套</b>：<code>PRIMARY KEY</code> 唯一标识、<code>NOT NULL</code> 不许为空、<code>AUTO_INCREMENT</code> 自动编号。</li>
+</ul>
+
+<h3>三、增删改查：CRUD 四兄弟</h3>
+<pre>INSERT INTO student (name, age, score) VALUES ('小明', 18, 95.5);
+INSERT INTO student (name, age, score) VALUES ('小红', 19, 88);
+
+SELECT * FROM student WHERE score &gt; 80;
+SELECT * FROM student ORDER BY score DESC;
+
+UPDATE student SET score = 90 WHERE name = '小刚';
+DELETE FROM student WHERE id = 3;</pre>
+<ul>
+  <li>列和值一一对应，<b>字符串加引号、数字不加</b>——漏引号就报 <code>Unknown column</code>。</li>
+  <li><b>UPDATE/DELETE 忘写 WHERE = 灾难</b>：改分变全改、删行变清表，<b>没有后悔药</b>。</li>
+  <li>铁律：<b>先 <code>SELECT</code> 再 UPDATE/DELETE</b>，确认选中的正是你要改/删的行。</li>
+</ul>
+
+<h3>四、进阶查询 & 聚合</h3>
+<pre>-- ① AND / OR：注意优先级，OR 想改顺序必须加括号
+SELECT * FROM student WHERE score &gt;= 80 AND class = '一班';
+
+-- ② LIKE 模糊：% 任意长度，_ 匹配单个字符
+SELECT * FROM student WHERE name LIKE '小%';
+
+-- ③ BETWEEN 区间（含边界）
+SELECT * FROM student WHERE score BETWEEN 70 AND 90;
+
+-- ④ LIMIT 分页：跳过 2 行取 3 行 = 第 3~5 行
+SELECT * FROM student ORDER BY score DESC LIMIT 3;
+SELECT * FROM student LIMIT 2, 3;</pre>
+<p>聚合 + 分组（面试必考）：</p>
+<pre>SELECT class, COUNT(*) 人数, AVG(score) 平均分, MAX(score) 最高, MIN(score) 最低
+FROM student
+GROUP BY class
+HAVING AVG(score) &gt;= 80;</pre>
+<blockquote><b>口诀：行用 WHERE，组用 HAVING。</b>执行顺序：<code>FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY → LIMIT</code>。WHERE 在分组前跑，那时还没"组平均分"概念；HAVING 在分组后跑，专门筛组。</blockquote>
+
+<h3>五、JOIN 多表（VLOOKUP 思维）</h3>
+<pre>-- INNER JOIN：两边都匹配的才留（交集）
+SELECT s.name, s.score, c.teacher, c.room
+FROM student s
+INNER JOIN class c ON s.class = c.name;
+
+-- LEFT JOIN：左表全留，右边对不上补 NULL
+SELECT c.name 班级, c.teacher 班主任, s.name 学生
+FROM class c
+LEFT JOIN student s ON c.name = s.class;</pre>
+<blockquote><b>面试经典题</b>："找出没有学生的班级 / 没有订单的客户"——答案：<code>LEFT JOIN + WHERE 右表主键 IS NULL</code>。这个套路背下来，面试直接默写。</blockquote>
+<p>三种"删"对比（面试命中率 90%）：</p>
+<table>
+  <tr><th></th><th>DELETE</th><th>TRUNCATE</th><th>DROP</th></tr>
+  <tr><td>删什么</td><td>行（可带 WHERE）</td><td>清空整表</td><td>整张表都没了</td></tr>
+  <tr><td>能否回滚</td><td>事务内可回滚</td><td>不可</td><td>不可</td></tr>
+  <tr><td>自增 ID</td><td>不重置</td><td>重置从 1 开始</td><td>表都没了</td></tr>
+  <tr><td>本质</td><td>DML（数据操作）</td><td>DDL</td><td>DDL</td></tr>
+</table>
+<blockquote><b>口诀：DELETE 删人、TRUNCATE 清场、DROP 拆楼。</b>"想清空表但保留表结构"答 TRUNCATE（不可回滚，慎用）。</blockquote>
+
+<h3>六、用户权限：最小权限原则</h3>
+<p>root 能删任何库——给同事/应用开 root？出事就是全库遭殃。原则：<b>每个人/每个应用只给够用的权限</b>。</p>
+<pre>-- ① 建用户
+CREATE USER 'reader'@'localhost' IDENTIFIED BY '123456';
+
+-- ② 只给 SELECT
+GRANT SELECT ON school.* TO 'reader'@'localhost';
+
+-- ③ 验证
+SHOW GRANTS FOR 'reader'@'localhost';</pre>
+<p>权限四兄弟：</p>
+<table>
+  <tr><th>命令</th><th>作用</th></tr>
+  <tr><td><code>GRANT 权限 ON 库.表 TO 用户</code></td><td>给权限</td></tr>
+  <tr><td><code>REVOKE 权限 ON 库.表 FROM 用户</code></td><td>收权限</td></tr>
+  <tr><td><code>ALTER USER 用户 IDENTIFIED BY '新密码'</code></td><td>改密码</td></tr>
+  <tr><td><code>DROP USER 用户</code></td><td>删用户（离职/不用了）</td></tr>
+</table>
+
+<h3>七、备份恢复（面试必问）</h3>
+<pre># 备份：&gt; 导出
+sudo mysqldump -u root school &gt; ~/school_backup.sql
+
+# 恢复：&lt 重放
+sudo mysql school &lt; ~/school_backup.sql
+
+# 验证
+sudo mysql -e "SELECT * FROM school.student;"</pre>
+<blockquote>备份策略怎么答？初级版：<b>每天定时 mysqldump 全库导出</b>（配合 crontab）。高级版加一句：备份文件要<b>放到另一台机器/磁盘</b>，防止机器挂了备份也没了。</blockquote>
+
+<h3>八、乱码：两套密码本对不上</h3>
+<pre>SET NAMES latin1;        -- 把客户端密码本换成老外的 latin1
+SELECT * FROM student;   -- 中文应该乱码了
+SET NAMES utf8mb4;       -- 换回 utf8mb4
+SELECT * FROM student;   -- 中文恢复</pre>
+<p>MySQL 8.0 默认 <code>utf8mb4</code>，所以中文正常存。面试题"中文乱码怎么办"——第一句答：<b>确认库/表是 utf8mb4</b>。
+
+<h3>两周总结：面试怎么考这一块</h3>
+<ul>
+  <li><b>手写</b>：LIMIT 分页公式、GROUP BY + HAVING、INNER/LEFT JOIN、GRANT。</li>
+  <li><b>口述</b>：索引为什么快（占空间/拖写入/失效场景）、事务 ACID、MyISAM vs InnoDB、隔离级别。</li>
+  <li><b>口诀背三句</b>：行用 WHERE 组用 HAVING；删人清场拆楼；最小权限原则。</li>
+</ul>
+<blockquote>够用了。再多背就超出"运维岗面试"的合理范围，真要深挖就奔 DBA 去了。</blockquote>
+`
+  }
+];

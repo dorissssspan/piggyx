@@ -27,10 +27,17 @@
         <h2><span class="hash">#</span>学习心得</h2>
         <a class="more" href="index.html">← 返回首页</a>
       </div>
-      <p style="color:var(--muted);margin-bottom:26px;max-width:640px;">
-        全部是转型路上的真实笔记：<b style="color:var(--text)">面试够用</b>导向，拒绝长篇教程。
-        每一篇都是我亲手敲过、踩过坑之后写下来的。
-      </p>
+      <div class="intro-row">
+        <p class="intro-text">
+          全部是所见所闻的真实笔记：面试题、coding教学、前沿AI，拒绝长篇大论……
+        </p>
+        <div class="search-box">
+          <span class="search-ico">🔍</span>
+          <input id="search-input" type="text" placeholder="搜索文章：标题 / 标签 / 关键词…" autocomplete="off">
+          <button id="search-clear" class="search-clear" title="清空" style="display:none;">✕</button>
+        </div>
+      </div>
+      <p class="search-count" id="search-count"></p>
       <div class="filter-bar" id="filter-bar"></div>
       <div class="cards" id="note-cards"></div>
     </div>
@@ -38,13 +45,20 @@
 </main>
 
 <footer class="footer">
-  <div class="container">© 2026 Piggy X · built with <span class="heart">♥</span> by 潘泯株</div>
+  <div class="container">
+    <div class="social-links">
+      <a class="social-link" href="https://github.com/dorissssspan?tab=repositories" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      </a>
+    </div>
+    <div>© 2026 Piggy X · built with <span class="heart">♥</span> by 潘泯株</div>
+  </div>
 </footer>
 
+<script src="js/data-articles/AI.js"></script>
 <script src="js/data-articles/Web.js"></script>
 <script src="js/data-articles/Linux.js"></script>
 <script src="js/data-articles/Python.js"></script>
-<script src="js/data-articles/AI.js"></script>
 <script src="js/data-articles/MySQL.js"></script>
 <script src="js/data-articles/Tool.js"></script>
 <script src="js/articles.js"></script>
@@ -54,7 +68,21 @@
 
   const bar = document.getElementById('filter-bar');
   const wrap = document.getElementById('note-cards');
-  let current = '全部';
+  const searchInput = document.getElementById('search-input');
+  const searchClear = document.getElementById('search-clear');
+  const searchCount = document.getElementById('search-count');
+  // 从 URL 恢复标签（从文章页带 ?tag= 回来时落到原标签，而非“全部”）
+  const urlParams = new URLSearchParams(location.search);
+  const urlTag = urlParams.get('tag');
+  let current = (urlTag && tags.includes(urlTag)) ? urlTag : '全部';
+  let keyword = urlParams.get('kw') || '';
+
+  // 模糊匹配：标题 / 简介 / 标签 / 正文 任一包含关键词
+  function matchKW(a, kw) {
+    if (!kw) return true;
+    const hay = (a.title + ' ' + a.summary + ' ' + a.tag + ' ' + a.content).toLowerCase();
+    return hay.includes(kw);
+  }
 
   function render() {
     bar.innerHTML = '';
@@ -66,11 +94,27 @@
       bar.appendChild(b);
     });
 
+    const list = ARTICLES.filter(a =>
+      (current === '全部' || a.tag === current) && matchKW(a, keyword)
+    );
+
+    searchCount.textContent = keyword
+      ? '“' + keyword + '” 找到 ' + list.length + ' 篇'
+      : '';
+
     wrap.innerHTML = '';
-    ARTICLES.filter(a => current === '全部' || a.tag === current).forEach(a => {
+    if (!list.length) {
+      wrap.innerHTML = '<p class="empty-tip">没有匹配的文章，换个关键词试试～</p>';
+      return;
+    }
+    list.forEach(a => {
       const card = document.createElement('a');
       card.className = 'card';
-      card.href = 'article.html?id=' + a.id;
+      // 把当前标签（及关键词）透传给文章页，方便返回时回到原筛选
+      let href = 'article.html?id=' + a.id;
+      if (current !== '全部') href += '&from=' + encodeURIComponent(current);
+      if (keyword) href += (current !== '全部' ? '' : '&') + 'kw=' + encodeURIComponent(keyword);
+      card.href = href;
       card.innerHTML =
         '<div class="card-meta"><span class="tag ' + a.tagClass + '">' + a.tag + '</span>' +
         '<span class="date">' + a.date + '</span></div>' +
@@ -80,6 +124,25 @@
       wrap.appendChild(card);
     });
   }
+
+  function applySearch() {
+    keyword = searchInput.value.trim().toLowerCase();
+    searchClear.style.display = keyword ? 'block' : 'none';
+    render();
+  }
+  searchInput.addEventListener('input', applySearch);
+  searchClear.addEventListener('click', () => {
+    searchInput.value = '';
+    searchInput.focus();
+    applySearch();
+  });
+
+  // 从文章页带 kw 回来时，回填搜索框并应用筛选
+  if (keyword) {
+    searchInput.value = keyword;
+    searchClear.style.display = 'block';
+  }
+
   render();
 </script>
 </body>

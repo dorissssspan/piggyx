@@ -14,7 +14,7 @@
     <div class="nav-links">
       <a href="index.html">首页</a>
       <a href="share.html" >日常唠叨</a>
-      <a href="notes.html" class="active">学习日志</a>
+      <a href="notes.html" id="nav-notes" class="active">学习日志</a>
       <a href="resume.html">我的简历</a>
     </div>
   </div>
@@ -24,7 +24,10 @@
   <div id="article">
     <div class="article-head">
       <div class="meta"><span class="tag" id="a-tag"></span><span id="a-date"></span></div>
-      <h1 id="a-title"></h1>
+      <div class="title-row">
+        <h1 id="a-title"></h1>
+        <a class="back-btn" id="a-back" href="notes.html">← 返回</a>
+      </div>
     </div>
     <div class="article-body" id="a-body"></div>
     <div class="article-nav" id="a-nav"></div>
@@ -35,16 +38,27 @@
   <div class="container">© 2026 Piggy X · built with <span class="heart">♥</span> by 潘泯株</div>
 </footer>
 
+<script src="js/data-articles/AI.js"></script>
 <script src="js/data-articles/Web.js"></script>
 <script src="js/data-articles/Linux.js"></script>
 <script src="js/data-articles/Python.js"></script>
-<script src="js/data-articles/AI.js"></script>
 <script src="js/data-articles/MySQL.js"></script>
 <script src="js/data-articles/Tool.js"></script>
 <script src="js/articles.js"></script>
 <script>
   const params = new URLSearchParams(location.search);
   const id = params.get('id');
+  const fromTag = params.get('from');
+  const kw = params.get('kw');
+  // 返回链接：带原标签（及关键词）回到笔记列表，落到原来的筛选
+  const backHref = 'notes.html'
+    + (fromTag ? '?tag=' + encodeURIComponent(fromTag) : '')
+    + (kw ? (fromTag ? '&' : '?') + 'kw=' + encodeURIComponent(kw) : '');
+  const navNotes = document.getElementById('nav-notes');
+  if (navNotes) navNotes.href = backHref;
+  const backBtn = document.getElementById('a-back');
+  if (backBtn) backBtn.href = backHref;
+
   const idx = ARTICLES.findIndex(a => a.id === id);
   const a = ARTICLES[idx];
 
@@ -54,7 +68,7 @@
     document.getElementById('article').innerHTML =
       '<h1 style="font-size:28px;">404 · 这篇文章去旅行了</h1>' +
       '<p style="color:var(--muted);margin:16px 0 24px;">没有找到对应的文章，可能链接写错了。</p>' +
-      '<a class="btn btn-primary" href="notes.html">← 返回学习日志</a>';
+      '<a class="btn btn-primary" href="' + backHref + '">← 返回学习日志</a>';
   } else {
     document.getElementById('a-tag').textContent = a.tag;
     document.getElementById('a-tag').className = 'tag ' + a.tagClass;
@@ -65,19 +79,22 @@
     const nav = document.getElementById('a-nav');
     const prev = ARTICLES[idx - 1];
     const next = ARTICLES[idx + 1];
+    const ctx = (fromTag ? '&from=' + encodeURIComponent(fromTag) : '')
+              + (kw ? '&kw=' + encodeURIComponent(kw) : '');
     if (prev) {
       const l = document.createElement('a');
-      l.href = 'article.html?id=' + prev.id;
+      l.href = 'article.html?id=' + prev.id + ctx;
       l.textContent = '← 上一篇：' + prev.title;
       nav.appendChild(l);
     }
     if (next) {
       const r = document.createElement('a');
-      r.href = 'article.html?id=' + next.id;
+      r.href = 'article.html?id=' + next.id + ctx;
       r.textContent = '下一篇：' + next.title + ' →';
       nav.appendChild(r);
     }
   }
 </script>
+<script src="js/lightbox.js"></script>
 </body>
 </html>

@@ -3,10 +3,10 @@
  * 此处仅负责合并。HTML 加载顺序必须：所有 data-articles/*.js 先于此文件。
  */
 const ARTICLES = [
+  ...AI_TOOLS_ARTICLES,
   ...FRONTEND_ARTICLES,
   ...LINUX_ARTICLES,
   ...PYTHON_ARTICLES,
-  ...AI_TOOLS_ARTICLES,
   ...MYSQL_ARTICLES,
   ...EFFICIENCY_ARTICLES
 ];

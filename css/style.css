@@ -185,6 +185,7 @@ a:hover { text-decoration: underline; }
 .tag.t-web { color: #fb923c; border-color: rgba(251,146,60,.4); background: rgba(251,146,60,.08); }
 .tag.t-stock { color: #f87171; border-color: rgba(248,113,113,.4); background: rgba(248,113,113,.08); }
 .tag.t-travel { color: #2dd4bf; border-color: rgba(45,212,191,.4); background: rgba(45,212,191,.08); }
+.tag.t-reading { color: #a3e635; border-color: rgba(163,230,53,.4); background: rgba(163,230,53,.08); }
 .card .date { font-family: var(--mono); font-size: 12px; color: var(--dim); }
 .card h3 { font-size: 18px; line-height: 1.45; color: var(--text); }
 .card a.title-link { color: var(--text); }
